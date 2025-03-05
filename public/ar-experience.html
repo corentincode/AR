@@ -167,34 +167,84 @@
       cursor: pointer;
     }
   </style>
+
+  <!-- Composant personnalisé pour gérer le chargement des modèles -->
+  <script>
+    AFRAME.registerComponent('model-handler', {
+      init: function() {
+        this.el.addEventListener('model-loaded', () => {
+          console.log('Modèle chargé avec succès');
+        });
+        this.el.addEventListener('model-error', (error) => {
+          console.error('Erreur de chargement du modèle:', error);
+        });
+      }
+    });
+  </script>
 </head>
 <body>
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
-    <a-marker preset="hiro" id="hiro-marker" emitevents="true">
-      <a-entity
-        id="pokemon-model"
-        position="0 0 0"
-        rotation="0 0 0"
-        scale="2.5 2.5 2.5"
-        gltf-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_vaporeon-lu4Sdtq7SlzJwGKeWqITsTRDRIs4xv.glb"
-      ></a-entity>
-      <a-text
-        id="pokemon-name"
-        value="Vaporeon"
-        position="0 0 0"
-        align="center"
-        color="white"
-        scale="0.5 0.5 0.5"
-      ></a-text>
-      <a-text
-        id="pokemon-letter"
-        value="V"
-        position="0 1 0"
-        align="center"
-        color="#4285f4"
-        scale="1 1 1"
-      ></a-text>
+  <!-- Configuration AR.js optimisée -->
+  <a-scene 
+    embedded 
+    arjs="sourceType: webcam; 
+          debugUIEnabled: false; 
+          detectionMode: mono_and_matrix; 
+          matrixCodeType: 3x3;
+          sourceWidth: 1080;
+          sourceHeight: 1920;
+          displayWidth: 1080;
+          displayHeight: 1920;
+          maxDetectionRate: 60;
+          canvasWidth: 1080;
+          canvasHeight: 1920;
+          trackingMethod: best;"
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
+    loading-screen="enabled: false">
+
+    <a-assets>
+      <a-asset-item id="vaporeon" src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_vaporeon-lu4Sdtq7SlzJwGKeWqITsTRDRIs4xv.glb"></a-asset-item>
+    </a-assets>
+
+    <a-marker preset="hiro" id="hiro-marker" emitevents="true" smooth="true" smoothCount="5">
+      <!-- Groupe pour le modèle et les textes -->
+      <a-entity id="pokemon-group" position="0 0 0">
+        <!-- Modèle Pokémon -->
+        <a-entity
+          id="pokemon-model"
+          position="0 0.5 0"
+          rotation="-90 0 0"
+          scale="2.5 2.5 2.5"
+          gltf-model="#vaporeon"
+          model-handler
+          animation="property: rotation; to: -90 360 0; loop: true; dur: 10000; easing: linear"
+        ></a-entity>
+
+        <!-- Textes -->
+        <a-text
+          id="pokemon-name"
+          value="Vaporeon"
+          position="0 0 0"
+          rotation="-90 0 0"
+          align="center"
+          baseline="center"
+          color="white"
+          scale="1 1 1"
+        ></a-text>
+
+        <a-text
+          id="pokemon-letter"
+          value="V"
+          position="0 1 0"
+          rotation="-90 0 0"
+          align="center"
+          baseline="center"
+          color="#4285f4"
+          scale="2 2 2"
+        ></a-text>
+      </a-entity>
     </a-marker>
+
     <a-entity camera></a-entity>
   </a-scene>
   
@@ -241,6 +291,7 @@
       const pokemonModel = document.getElementById('pokemon-model');
       const pokemonName = document.getElementById('pokemon-name');
       const pokemonLetter = document.getElementById('pokemon-letter');
+      const pokemonGroup = document.getElementById('pokemon-group');
       
       // Show/hide instructions
       closeInstructionsButton.addEventListener('click', function() {
@@ -256,12 +307,14 @@
         console.log('Marker found!');
         markerStatus.textContent = 'Marqueur détecté';
         markerStatus.classList.add('detected');
+        pokemonGroup.setAttribute('visible', true);
       });
       
       marker.addEventListener('markerLost', function() {
         console.log('Marker lost!');
         markerStatus.textContent = 'Recherche de marqueur...';
         markerStatus.classList.remove('detected');
+        pokemonGroup.setAttribute('visible', false);
       });
       
       // Letter selection
@@ -276,17 +329,26 @@
           const modelUrl = this.getAttribute('data-model');
           const name = this.getAttribute('data-name');
           
+          console.log('Changing model to:', modelUrl);
+          
           // Update model and text
           pokemonModel.setAttribute('gltf-model', modelUrl);
           pokemonName.setAttribute('value', name);
           pokemonLetter.setAttribute('value', letter);
           pokemonNameDisplay.textContent = name;
-          
-          // Reset position to ensure it's on the marker
-          pokemonModel.setAttribute('position', '0 0 0');
-          pokemonName.setAttribute('position', '0 0 0');
-          pokemonLetter.setAttribute('position', '0 1 0');
         });
+      });
+
+      // Log les erreurs de chargement des modèles
+      pokemonModel.addEventListener('model-error', function(error) {
+        console.error('Erreur de chargement du modèle:', error);
+        markerStatus.textContent = 'Erreur de chargement';
+        markerStatus.style.backgroundColor = 'rgba(239, 68, 68, 0.8)';
+      });
+
+      // Log le succès du chargement des modèles
+      pokemonModel.addEventListener('model-loaded', function() {
+        console.log('Modèle chargé avec succès');
       });
     });
   </script>
