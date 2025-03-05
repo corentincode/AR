@@ -169,13 +169,13 @@
   </style>
 </head>
 <body>
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; sourceWidth: 1080; sourceHeight: 1920; displayWidth: 1080; displayHeight: 1920;">
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
     <a-marker preset="hiro" id="hiro-marker" emitevents="true">
       <a-entity
         id="pokemon-model"
-        position="0 0.5 0"
+        position="0 0 0"
         rotation="0 0 0"
-        scale="0.5 0.5 0.5"
+        scale="2.5 2.5 2.5"
         gltf-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_vaporeon-lu4Sdtq7SlzJwGKeWqITsTRDRIs4xv.glb"
       ></a-entity>
       <a-text
@@ -195,7 +195,7 @@
         scale="1 1 1"
       ></a-text>
     </a-marker>
-    <a-entity camera look-controls wasd-controls position="0 0 0"></a-entity>
+    <a-entity camera></a-entity>
   </a-scene>
   
   <div id="marker-status" class="marker-status">Recherche de marqueur...</div>
@@ -283,7 +283,7 @@
           pokemonNameDisplay.textContent = name;
           
           // Reset position to ensure it's on the marker
-          pokemonModel.setAttribute('position', '0 0.5 0');
+          pokemonModel.setAttribute('position', '0 0 0');
           pokemonName.setAttribute('position', '0 0 0');
           pokemonLetter.setAttribute('position', '0 1 0');
         });
