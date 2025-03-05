@@ -191,12 +191,12 @@
         position="0 0 0"
         rotation="350 0 0"
         scale="1 1 1"
-        gltf-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_vaporeon-lu4Sdtq7SlzJwGKeWqITsTRDRIs4xv.glb"
+        gltf-model="/tortue.glb"
       ></a-entity>
       <a-text
         id="pokemon-name"
-        value="Vaporeon"
-        position="0 2 0"
+        value="Tortue"
+        position="0 1 0"
         rotation="350 0 0"
         align="center"
         color="white"
@@ -229,7 +229,7 @@
   <div class="ui-container">
     <div id="pokemon-name-display" class="pokemon-name">Vaporeon</div>
     <div class="letter-selector">
-      <button class="letter-button active" data-letter="V" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_vaporeon-lu4Sdtq7SlzJwGKeWqITsTRDRIs4xv.glb" data-name="Vaporeon">V</button>
+      <button class="letter-button active" data-letter="T" data-model="/tortue.glb" data-name="Tortue">T</button>
       <button class="letter-button" data-letter="F" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_flareon-ha6lLa8iAKSulkAgu5sby1mvilmWui.glb" data-name="Flareon">F</button>
       <button class="letter-button" data-letter="J" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_jolteon-Chq0i0bWWUsgJR3mi0Qg7qF3yBQpgm.glb" data-name="Jolteon">J</button>
       <button class="letter-button" data-letter="E" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_espeon-aqxxplrVA2dMeoC3cHPWinJuiSDcrg.glb" data-name="Espeon">E</button>
@@ -274,25 +274,39 @@
         markerStatus.classList.remove('detected');
       });
       
-      // Letter selection
-      letterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          // Update active button
-          letterButtons.forEach(btn => btn.classList.remove('active'));
-          this.classList.add('active');
-          
-          // Get data attributes
-          const letter = this.getAttribute('data-letter');
-          const modelUrl = this.getAttribute('data-model');
-          const name = this.getAttribute('data-name');
-          
-          // Update model and text
-          pokemonModel.setAttribute('gltf-model', modelUrl);
-          pokemonName.setAttribute('value', name);
-          pokemonLetter.setAttribute('value', letter);
-          pokemonNameDisplay.textContent = name;
-        });
-      });
+// Letter selection
+letterButtons.forEach(button => {
+  button.addEventListener('click', function() {
+    // Update active button
+    letterButtons.forEach(btn => btn.classList.remove('active'));
+    this.classList.add('active');
+    
+    // Get data attributes
+    const letter = this.getAttribute('data-letter');
+    const modelUrl = this.getAttribute('data-model');
+    const name = this.getAttribute('data-name');
+    
+    // Update model and text
+    pokemonModel.setAttribute('gltf-model', modelUrl);
+    pokemonName.setAttribute('value', name);
+    pokemonNameDisplay.textContent = name;
+    
+    // Appliquer une échelle différente pour la tortue
+    if (letter === 'T' || name === 'Tortue') {
+      // Échelle beaucoup plus petite
+      pokemonModel.setAttribute('scale', '0.05 0.05 0.05');
+      // Position ajustée pour être visible sur le marqueur
+      pokemonModel.setAttribute('position', '0 2 0');
+      // Rotation pour retourner la tortue (180 degrés sur X pour la retourner)
+      pokemonModel.setAttribute('rotation', '0 180 0');
+    } else {
+      // Rétablir l'échelle et la position par défaut pour les autres modèles
+      pokemonModel.setAttribute('scale', '1 1 1');
+      pokemonModel.setAttribute('position', '0 0 0');
+      pokemonModel.setAttribute('rotation', '350 0 0');
+    }
+  });
+});
       
       // Fix pour l'affichage plein écran
       function fixFullscreenDisplay() {
@@ -330,4 +344,3 @@
   </script>
 </body>
 </html>
-
