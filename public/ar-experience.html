@@ -19,8 +19,22 @@
       height: 100%;
       -webkit-user-select: none;
       user-select: none;
+      background-color: transparent !important;
     }
     
+    .arjs-loader {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     .a-canvas {
       width: 100% !important;
       height: 100% !important;
@@ -28,6 +42,10 @@
       top: 0 !important;
       left: 0 !important;
       z-index: 0 !important;
+    }
+
+    .a-enter-vr {
+      display: none !important;
     }
     
     .ui-container {
@@ -166,61 +184,55 @@
       font-size: 16px;
       cursor: pointer;
     }
-    
-    .error-message {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: rgba(239, 68, 68, 0.9);
-      color: white;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      z-index: 3000;
-      max-width: 80%;
-    }
-
-    .retry-button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background-color: white;
-      color: black;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <!-- Configuration AR.js simplifiée -->
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
-    <a-marker preset="hiro" id="hiro-marker" emitevents="true">
+  <div class="arjs-loader">
+    <div>Chargement de la caméra...</div>
+  </div>
+
+  <a-scene 
+    embedded 
+    arjs="sourceType: webcam; 
+          debugUIEnabled: false; 
+          detectionMode: mono_and_matrix; 
+          matrixCodeType: 3x3;
+          sourceWidth: 1920;
+          sourceHeight: 1080;
+          displayWidth: 1920;
+          displayHeight: 1080;"
+    renderer="antialias: true; alpha: true; precision: mediump;"
+    vr-mode-ui="enabled: false">
+
+    <a-marker preset="hiro" id="hiro-marker" emitevents="true" smooth="true" smoothCount="5">
       <a-entity
         id="pokemon-model"
         position="0 0 0"
-        rotation="0 0 0"
+        rotation="270 0 0"
         scale="2.5 2.5 2.5"
         gltf-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_vaporeon-lu4Sdtq7SlzJwGKeWqITsTRDRIs4xv.glb"
       ></a-entity>
       <a-text
         id="pokemon-name"
         value="Vaporeon"
-        position="0 0 0"
+        position="0 -1 0"
+        rotation="270 0 0"
         align="center"
         color="white"
-        scale="0.5 0.5 0.5"
+        scale="2 2 2"
       ></a-text>
       <a-text
         id="pokemon-letter"
         value="V"
         position="0 1 0"
+        rotation="270 0 0"
         align="center"
         color="#4285f4"
-        scale="1 1 1"
+        scale="3 3 3"
       ></a-text>
     </a-marker>
-    <a-entity camera></a-entity>
+
+    <a-entity camera position="0 0 0"></a-entity>
   </a-scene>
   
   <div id="marker-status" class="marker-status">Recherche de marqueur...</div>
@@ -254,6 +266,12 @@
   </div>
   
   <script>
+    // Masquer le loader une fois que la scène est chargée
+    window.addEventListener('load', function() {
+      const loader = document.querySelector('.arjs-loader');
+      loader.style.display = 'none';
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
       // Elements
       const markerStatus = document.getElementById('marker-status');
@@ -306,11 +324,6 @@
           pokemonName.setAttribute('value', name);
           pokemonLetter.setAttribute('value', letter);
           pokemonNameDisplay.textContent = name;
-          
-          // Reset position to ensure it's on the marker
-          pokemonModel.setAttribute('position', '0 0 0');
-          pokemonName.setAttribute('position', '0 0 0');
-          pokemonLetter.setAttribute('position', '0 1 0');
         });
       });
     });
