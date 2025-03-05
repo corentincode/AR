@@ -227,7 +227,7 @@
   </div>
   
   <div class="ui-container">
-    <div id="pokemon-name-display" class="pokemon-name">Vaporeon</div>
+    <div id="pokemon-name-display" class="pokemon-name">Tortue</div>
     <div class="letter-selector">
       <button class="letter-button active" data-letter="T" data-model="/tortue.glb" data-name="Tortue">T</button>
       <button class="letter-button" data-letter="O" data-model="/oiseau.glb" data-name="Oiseau">O</button>
@@ -239,6 +239,40 @@
   </div>
   
   <script>
+    // Configuration des modèles
+    const modelConfigs = {
+      'Tortue': {
+        scale: '0.02 0.02 0.02',
+        position: '0 0.75 0',
+        rotation: '0 180 0'
+      },
+      'Oiseau': {
+        scale: '0.75 0.75 0.75',
+        position: '0 0 0',
+        rotation: '350 0 0'
+      },
+      'Poisson': {
+        scale: '0.02 0.02 0.02',
+        position: '0 0 0',
+        rotation: '350 0 0'
+      },
+      'Espeon': {
+        scale: '1 1 1',
+        position: '0 0 0',
+        rotation: '350 0 0'
+      },
+      'Glaceon': {
+        scale: '1 1 1',
+        position: '0 0 0',
+        rotation: '350 0 0'
+      },
+      'Leafeon': {
+        scale: '1 1 1',
+        position: '0 0 0',
+        rotation: '350 0 0'
+      }
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
       // Elements
       const markerStatus = document.getElementById('marker-status');
@@ -250,7 +284,15 @@
       const marker = document.getElementById('hiro-marker');
       const pokemonModel = document.getElementById('pokemon-model');
       const pokemonName = document.getElementById('pokemon-name');
-      const pokemonLetter = document.getElementById('pokemon-letter');
+      
+      // Initialiser avec le modèle actif
+      const initialModelName = pokemonNameDisplay.textContent;
+      if (modelConfigs[initialModelName]) {
+        const config = modelConfigs[initialModelName];
+        pokemonModel.setAttribute('scale', config.scale);
+        pokemonModel.setAttribute('position', config.position);
+        pokemonModel.setAttribute('rotation', config.rotation);
+      }
       
       // Show/hide instructions
       closeInstructionsButton.addEventListener('click', function() {
@@ -274,52 +316,36 @@
         markerStatus.classList.remove('detected');
       });
       
-// Letter selection
-letterButtons.forEach(button => {
-  button.addEventListener('click', function() {
-    // Update active button
-    letterButtons.forEach(btn => btn.classList.remove('active'));
-    this.classList.add('active');
-    
-    // Get data attributes
-    const letter = this.getAttribute('data-letter');
-    const modelUrl = this.getAttribute('data-model');
-    const name = this.getAttribute('data-name');
-    
-    // Update model and text
-    pokemonModel.setAttribute('gltf-model', modelUrl);
-    pokemonName.setAttribute('value', name);
-    pokemonNameDisplay.textContent = name;
-    
-    // Appliquer une échelle différente pour la tortue
-    if (letter === 'T' || name === 'Tortue') {
-      // Échelle beaucoup plus petite
-      pokemonModel.setAttribute('scale', '0.02 0.02 0.02');
-      // Position ajustée pour être visible sur le marqueur
-      pokemonModel.setAttribute('position', '0 0.75 0');
-      // Rotation pour retourner la tortue (180 degrés sur X pour la retourner)
-      pokemonModel.setAttribute('rotation', '0 180 0');
-    } 
-    // Appliquer une échelle différente pour la tortue
-    if (letter === 'O' || name === 'Oiseau') {
-      // Échelle beaucoup plus petite
-      pokemonModel.setAttribute('scale', '0.75 0.75 0.75');
-      // Position ajustée pour être visible sur le marqueur
-      pokemonModel.setAttribute('position', '0 0 0');
-      // Rotation pour retourner la tortue (180 degrés sur X pour la retourner)
-      pokemonModel.setAttribute('rotation', '350 0 0');
-    } 
-    // Appliquer une échelle différente pour la tortue
-    if (letter === 'P' || name === 'Poisson') {
-      // Échelle beaucoup plus petite
-      pokemonModel.setAttribute('scale', '0.02 0.02 0.02');
-      // Position ajustée pour être visible sur le marqueur
-      pokemonModel.setAttribute('position', '0 0 0');
-      // Rotation pour retourner la tortue (180 degrés sur X pour la retourner)
-      pokemonModel.setAttribute('rotation', '350 0 0');
-    } 
-  });
-});
+      // Letter selection
+      letterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Update active button
+          letterButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Get data attributes
+          const modelUrl = this.getAttribute('data-model');
+          const name = this.getAttribute('data-name');
+          
+          console.log('Changing to model:', name);
+          
+          // Update model and text
+          pokemonModel.setAttribute('gltf-model', modelUrl);
+          pokemonName.setAttribute('value', name);
+          pokemonNameDisplay.textContent = name;
+          
+          // Appliquer la configuration spécifique au modèle
+          if (modelConfigs[name]) {
+            const config = modelConfigs[name];
+            console.log('Applying config:', config);
+            pokemonModel.setAttribute('scale', config.scale);
+            pokemonModel.setAttribute('position', config.position);
+            pokemonModel.setAttribute('rotation', config.rotation);
+          } else {
+            console.warn('No configuration found for model:', name);
+          }
+        });
+      });
       
       // Fix pour l'affichage plein écran
       function fixFullscreenDisplay() {
@@ -357,3 +383,4 @@ letterButtons.forEach(button => {
   </script>
 </body>
 </html>
+
