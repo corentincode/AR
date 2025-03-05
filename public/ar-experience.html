@@ -166,6 +166,30 @@
       font-size: 16px;
       cursor: pointer;
     }
+    
+    .error-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(239, 68, 68, 0.9);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 3000;
+      max-width: 80%;
+    }
+
+    .retry-button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: white;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 
   <!-- Composant personnalisé pour gérer le chargement des modèles -->
@@ -181,6 +205,56 @@
       }
     });
   </script>
+  
+  <!-- Composant personnalisé pour gérer l'initialisation de la caméra -->
+  <script>
+    AFRAME.registerComponent('camera-handler', {
+      init: function() {
+        this.setupCamera = this.setupCamera.bind(this);
+        this.handleError = this.handleError.bind(this);
+        
+        // Attendre que la scène soit chargée
+        this.el.sceneEl.addEventListener('loaded', this.setupCamera);
+      },
+
+      setupCamera: function() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then((stream) => {
+              // Stocker le stream pour pouvoir l'arrêter plus tard si nécessaire
+              this.videoStream = stream;
+              console.log('Caméra initialisée avec succès');
+            })
+            .catch(this.handleError);
+        } else {
+          this.handleError(new Error('getUserMedia non supporté'));
+        }
+      },
+
+      handleError: function(error) {
+        console.error('Erreur caméra:', error);
+        showErrorMessage('Erreur d\'accès à la caméra. Veuillez réessayer.');
+      },
+
+      remove: function() {
+        // Nettoyer le stream vidéo lors de la destruction du composant
+        if (this.videoStream) {
+          this.videoStream.getTracks().forEach(track => track.stop());
+        }
+      }
+    });
+
+    // Fonction pour afficher un message d'erreur
+    function showErrorMessage(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.innerHTML = `
+        <p>${message}</p>
+        <button class="retry-button" onclick="window.location.reload()">Réessayer</button>
+      `;
+      document.body.appendChild(errorDiv);
+    }
+  </script>
 </head>
 <body>
   <!-- Configuration AR.js optimisée -->
@@ -194,10 +268,7 @@
           sourceHeight: 1920;
           displayWidth: 1080;
           displayHeight: 1920;
-          maxDetectionRate: 60;
-          canvasWidth: 1080;
-          canvasHeight: 1920;
-          trackingMethod: best;"
+          maxDetectionRate: 60;"
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
     loading-screen="enabled: false">
@@ -245,7 +316,7 @@
       </a-entity>
     </a-marker>
 
-    <a-entity camera></a-entity>
+    <a-entity camera camera-handler></a-entity>
   </a-scene>
   
   <div id="marker-status" class="marker-status">Recherche de marqueur...</div>
@@ -256,10 +327,10 @@
     <div class="instructions-content">
       <h2>Visualiseur AR Pokémon</h2>
       <ol>
+        <li>Autorisez l'accès à la caméra lorsque demandé</li>
         <li>Pointez votre caméra vers un marqueur Hiro</li>
         <li>Un modèle 3D de Pokémon apparaîtra sur le marqueur</li>
         <li>Utilisez le sélecteur en bas pour changer de Pokémon</li>
-        <li>Chaque lettre correspond à une évolution d'Évoli</li>
       </ol>
       <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" alt="Marqueur Hiro">
       <button id="close-instructions" class="close-button">Commencer</button>
@@ -269,7 +340,7 @@
   <div class="ui-container">
     <div id="pokemon-name-display" class="pokemon-name">Vaporeon</div>
     <div class="letter-selector">
-      <button class="letter-button active" data-letter="V" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_vaporeon-lu4Sdtq7SlzJwGKeWqITsTRDRIs4xv.glb" data-name="Vaporeon">V</button>
+      <button class="letter-button active" data-letter="V" data-model="#vaporeon" data-name="Vaporeon">V</button>
       <button class="letter-button" data-letter="F" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_flareon-ha6lLa8iAKSulkAgu5sby1mvilmWui.glb" data-name="Flareon">F</button>
       <button class="letter-button" data-letter="J" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_jolteon-Chq0i0bWWUsgJR3mi0Qg7qF3yBQpgm.glb" data-name="Jolteon">J</button>
       <button class="letter-button" data-letter="E" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_espeon-aqxxplrVA2dMeoC3cHPWinJuiSDcrg.glb" data-name="Espeon">E</button>
@@ -292,6 +363,14 @@
       const pokemonName = document.getElementById('pokemon-name');
       const pokemonLetter = document.getElementById('pokemon-letter');
       const pokemonGroup = document.getElementById('pokemon-group');
+      
+      // Vérifier si la caméra est déjà autorisée
+      navigator.permissions && navigator.permissions.query({name: 'camera'})
+        .then(function(result) {
+          if (result.state === 'denied') {
+            showErrorMessage('L\'accès à la caméra a été refusé. Veuillez l\'autoriser dans les paramètres de votre navigateur.');
+          }
+        });
       
       // Show/hide instructions
       closeInstructionsButton.addEventListener('click', function() {
@@ -320,18 +399,13 @@
       // Letter selection
       letterButtons.forEach(button => {
         button.addEventListener('click', function() {
-          // Update active button
           letterButtons.forEach(btn => btn.classList.remove('active'));
           this.classList.add('active');
           
-          // Get data attributes
           const letter = this.getAttribute('data-letter');
           const modelUrl = this.getAttribute('data-model');
           const name = this.getAttribute('data-name');
           
-          console.log('Changing model to:', modelUrl);
-          
-          // Update model and text
           pokemonModel.setAttribute('gltf-model', modelUrl);
           pokemonName.setAttribute('value', name);
           pokemonLetter.setAttribute('value', letter);
@@ -339,16 +413,10 @@
         });
       });
 
-      // Log les erreurs de chargement des modèles
-      pokemonModel.addEventListener('model-error', function(error) {
-        console.error('Erreur de chargement du modèle:', error);
-        markerStatus.textContent = 'Erreur de chargement';
-        markerStatus.style.backgroundColor = 'rgba(239, 68, 68, 0.8)';
-      });
-
-      // Log le succès du chargement des modèles
-      pokemonModel.addEventListener('model-loaded', function() {
-        console.log('Modèle chargé avec succès');
+      // Gestion des erreurs globales
+      window.addEventListener('error', function(event) {
+        console.error('Erreur globale:', event.error);
+        showErrorMessage('Une erreur est survenue. Veuillez rafraîchir la page.');
       });
     });
   </script>
