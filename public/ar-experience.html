@@ -308,11 +308,11 @@ letterButtons.forEach(button => {
     // Appliquer une échelle différente pour la tortue
     if (letter === 'O' || name === 'Oiseau') {
       // Échelle beaucoup plus petite
-      pokemonModel.setAttribute('scale', '0.02 0.02 0.02');
+      pokemonModel.setAttribute('scale', '0.75 0.75 0.75');
       // Position ajustée pour être visible sur le marqueur
-      pokemonModel.setAttribute('position', '0 0.75 0');
+      pokemonModel.setAttribute('position', '0 0 0');
       // Rotation pour retourner la tortue (180 degrés sur X pour la retourner)
-      pokemonModel.setAttribute('rotation', '0 180 0');
+      pokemonModel.setAttribute('rotation', '350 0 0');
     } else {
       // Rétablir l'échelle et la position par défaut pour les autres modèles
       pokemonModel.setAttribute('scale', '1 1 1');
