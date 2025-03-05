@@ -176,40 +176,6 @@
       width: 100% !important;
       height: 100% !important;
     }
-    
-    /* Loader pour les modèles */
-    .model-loader {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 15px 20px;
-      border-radius: 10px;
-      z-index: 3000;
-      display: none;
-    }
-    
-    .model-loader.visible {
-      display: block;
-    }
-    
-    .spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 10px;
-      vertical-align: middle;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
   </style>
 </head>
 <body>
@@ -219,23 +185,13 @@
     renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true;"
     arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
     
-    <a-assets>
-      <!-- Préchargement des modèles -->
-      <a-asset-item id="model-tortue" src="/tortue.glb"></a-asset-item>
-      <a-asset-item id="model-oiseau" src="/oiseau.glb"></a-asset-item>
-      <a-asset-item id="model-poisson" src="/poisson.glb"></a-asset-item>
-      <a-asset-item id="model-espeon" src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_espeon-aqxxplrVA2dMeoC3cHPWinJuiSDcrg.glb"></a-asset-item>
-      <a-asset-item id="model-glaceon" src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_glaceon-7VWYKqy58HMQTN0k2WdnksUDQQTSiL.glb"></a-asset-item>
-      <a-asset-item id="model-leafeon" src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_leafeon-JHXyPt5E1MNXhJJQqNGtkI1e6gpuPI.glb"></a-asset-item>
-    </a-assets>
-    
     <a-marker preset="hiro" id="hiro-marker" emitevents="true">
       <a-entity
         id="pokemon-model"
         position="0 0 0"
         rotation="350 0 0"
         scale="1 1 1"
-        gltf-model="#model-tortue"
+        gltf-model="/tortue.glb"
       ></a-entity>
       <a-text
         id="pokemon-name"
@@ -270,20 +226,15 @@
     </div>
   </div>
   
-  <div id="model-loader" class="model-loader">
-    <span class="spinner"></span>
-    <span>Chargement du modèle...</span>
-  </div>
-  
   <div class="ui-container">
     <div id="pokemon-name-display" class="pokemon-name">Tortue</div>
     <div class="letter-selector">
-      <button class="letter-button active" data-letter="T" data-model="#model-tortue" data-name="Tortue">T</button>
-      <button class="letter-button" data-letter="O" data-model="#model-oiseau" data-name="Oiseau">O</button>
-      <button class="letter-button" data-letter="P" data-model="#model-poisson" data-name="Poisson">P</button>
-      <button class="letter-button" data-letter="E" data-model="#model-espeon" data-name="Espeon">E</button>
-      <button class="letter-button" data-letter="G" data-model="#model-glaceon" data-name="Glaceon">G</button>
-      <button class="letter-button" data-letter="L" data-model="#model-leafeon" data-name="Leafeon">L</button>
+      <button class="letter-button active" data-letter="T" data-model="/tortue.glb" data-name="Tortue">T</button>
+      <button class="letter-button" data-letter="O" data-model="/oiseau.glb" data-name="Oiseau">O</button>
+      <button class="letter-button" data-letter="P" data-model="/poisson.glb" data-name="Poisson">P</button>
+      <button class="letter-button" data-letter="E" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_espeon-aqxxplrVA2dMeoC3cHPWinJuiSDcrg.glb" data-name="Espeon">E</button>
+      <button class="letter-button" data-letter="G" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_glaceon-7VWYKqy58HMQTN0k2WdnksUDQQTSiL.glb" data-name="Glaceon">G</button>
+      <button class="letter-button" data-letter="L" data-model="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pokedex_3d_pro_leafeon-JHXyPt5E1MNXhJJQqNGtkI1e6gpuPI.glb" data-name="Leafeon">L</button>
     </div>
   </div>
   
@@ -322,6 +273,12 @@
       }
     };
 
+    // Variable pour suivre si un modèle est en cours de chargement
+    let isModelLoading = false;
+    
+    // Variable pour empêcher le rechargement automatique
+    let lastInteractionTime = Date.now();
+
     document.addEventListener('DOMContentLoaded', function() {
       // Elements
       const markerStatus = document.getElementById('marker-status');
@@ -333,10 +290,6 @@
       const marker = document.getElementById('hiro-marker');
       const pokemonModel = document.getElementById('pokemon-model');
       const pokemonName = document.getElementById('pokemon-name');
-      const modelLoader = document.getElementById('model-loader');
-      
-      // Variable pour suivre le modèle en cours de chargement
-      let isModelLoading = false;
       
       // Initialiser avec le modèle actif
       const initialModelName = pokemonNameDisplay.textContent;
@@ -350,10 +303,12 @@
       // Show/hide instructions
       closeInstructionsButton.addEventListener('click', function() {
         instructions.style.display = 'none';
+        lastInteractionTime = Date.now();
       });
       
       infoButton.addEventListener('click', function() {
         instructions.style.display = 'flex';
+        lastInteractionTime = Date.now();
       });
       
       // Marker detection events
@@ -361,36 +316,30 @@
         console.log('Marker found!');
         markerStatus.textContent = 'Marqueur détecté';
         markerStatus.classList.add('detected');
+        lastInteractionTime = Date.now();
       });
       
       marker.addEventListener('markerLost', function() {
         console.log('Marker lost!');
         markerStatus.textContent = 'Recherche de marqueur...';
         markerStatus.classList.remove('detected');
-      });
-      
-      // Événement de chargement du modèle
-      pokemonModel.addEventListener('model-loaded', function() {
-        console.log('Model loaded successfully');
-        isModelLoading = false;
-        modelLoader.classList.remove('visible');
-      });
-      
-      // Événement d'erreur de chargement du modèle
-      pokemonModel.addEventListener('model-error', function(e) {
-        console.error('Error loading model:', e);
-        isModelLoading = false;
-        modelLoader.classList.remove('visible');
+        lastInteractionTime = Date.now();
       });
       
       // Letter selection
       letterButtons.forEach(button => {
         button.addEventListener('click', function() {
+          // Mettre à jour le temps d'interaction
+          lastInteractionTime = Date.now();
+          
           // Si un modèle est déjà en cours de chargement, ignorer le clic
           if (isModelLoading) {
             console.log('Model is already loading, ignoring click');
             return;
           }
+          
+          // Marquer comme en cours de chargement
+          isModelLoading = true;
           
           // Update active button
           letterButtons.forEach(btn => btn.classList.remove('active'));
@@ -401,10 +350,6 @@
           const name = this.getAttribute('data-name');
           
           console.log('Changing to model:', name);
-          
-          // Afficher le loader
-          isModelLoading = true;
-          modelLoader.classList.add('visible');
           
           // Update model and text
           pokemonModel.setAttribute('gltf-model', modelUrl);
@@ -422,13 +367,10 @@
             console.warn('No configuration found for model:', name);
           }
           
-          // Masquer le loader après un délai maximum (au cas où l'événement model-loaded ne se déclenche pas)
+          // Réinitialiser l'état de chargement après un délai
           setTimeout(function() {
-            if (isModelLoading) {
-              isModelLoading = false;
-              modelLoader.classList.remove('visible');
-            }
-          }, 10000); // 10 secondes maximum
+            isModelLoading = false;
+          }, 2000);
         });
       });
       
@@ -460,29 +402,31 @@
       window.addEventListener('load', fixFullscreenDisplay);
       window.addEventListener('resize', fixFullscreenDisplay);
       
-      // Appliquer le fix une seule fois après un court délai
+      // Appliquer le fix plusieurs fois pour s'assurer qu'il fonctionne
+      setTimeout(fixFullscreenDisplay, 500);
       setTimeout(fixFullscreenDisplay, 1000);
       
-      // Empêcher le rechargement automatique de la page
-      window.addEventListener('beforeunload', function(e) {
-        // Annuler l'événement si ce n'est pas un rechargement intentionnel
-        if (!window.isIntentionalReload) {
-          e.preventDefault();
-          e.returnValue = '';
-          return '';
-        }
+      // Empêcher le rechargement automatique
+      document.addEventListener('touchstart', function() {
+        lastInteractionTime = Date.now();
       });
       
-      // Désactiver les timeouts qui pourraient causer un rechargement
-      const originalSetTimeout = window.setTimeout;
-      window.setTimeout = function(callback, delay) {
-        // Limiter les délais longs qui pourraient causer un rechargement
-        if (delay > 20000) {
-          console.warn('Long timeout detected and limited:', delay);
-          delay = 20000;
+      document.addEventListener('click', function() {
+        lastInteractionTime = Date.now();
+      });
+      
+      // Vérifier périodiquement si la page est inactive depuis trop longtemps
+      // Si c'est le cas, empêcher le rechargement automatique
+      setInterval(function() {
+        const now = Date.now();
+        const timeSinceLastInteraction = now - lastInteractionTime;
+        
+        // Si plus de 25 secondes sans interaction, réinitialiser le compteur
+        if (timeSinceLastInteraction > 25000) {
+          console.log('Preventing auto-reload by simulating interaction');
+          lastInteractionTime = now;
         }
-        return originalSetTimeout(callback, delay);
-      };
+      }, 5000);
     });
   </script>
 </body>
