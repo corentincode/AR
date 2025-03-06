@@ -112,42 +112,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-indigo-950 via-blue-900 to-slate-900 text-white overflow-auto">
-      <Head>
-        <title>AR Alphabet Animaux</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      </Head>
-
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md bg-black/20 border-b border-white/10">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4">
-            <div className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
-              AR Alphabet Animaux
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setActiveTab("home")}
-                className={`px-3 py-1 rounded-full text-sm transition-all ${activeTab === "home" ? "bg-blue-600 text-white" : "text-white/70 hover:text-white"}`}
-              >
-                Accueil
-              </button>
-              <button
-                onClick={() => setActiveTab("how")}
-                className={`px-3 py-1 rounded-full text-sm transition-all ${activeTab === "how" ? "bg-blue-600 text-white" : "text-white/70 hover:text-white"}`}
-              >
-                Comment ça marche
-              </button>
-              <button
-                onClick={() => setActiveTab("animals")}
-                className={`px-3 py-1 rounded-full text-sm transition-all ${activeTab === "animals" ? "bg-blue-600 text-white" : "text-white/70 hover:text-white"}`}
-              >
-                Animaux
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
         <section className="relative py-16 mb-16">
