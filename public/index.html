@@ -1,27 +1,394 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Pokémon Alphabet</title>
-  <!-- Préchargement des scripts AR -->
-  <link rel="preload" href="https://aframe.io/releases/1.3.0/aframe.min.js" as="script">
-  <link rel="preload" href="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js" as="script">
-  <!-- Styles pour désactiver le défilement et le zoom -->
+  <title>AR Alphabet Animaux</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    html, body {
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
+    * {
       margin: 0;
       padding: 0;
-      -webkit-user-select: none;
-      user-select: none;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      text-align: center;
+      padding: 40px 0;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      background: linear-gradient(to right, #4f46e5, #3b82f6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.8;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      line-height: 1.6;
+    }
+    
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 60px;
+    }
+    
+    .hero-image {
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+      margin-bottom: 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .cta-button {
+      display: inline-block;
+      padding: 15px 30px;
+      background: linear-gradient(to right, #4f46e5, #3b82f6);
+      color: white;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(59, 130, 246, 0.5);
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+    
+    .feature-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-10px);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #3b82f6;
+    }
+    
+    .feature-title {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+    }
+    
+    .feature-description {
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+    
+    .how-it-works {
+      margin-bottom: 60px;
+    }
+    
+    .section-title {
+      font-size: 2rem;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+    
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .step-number {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(to right, #4f46e5, #3b82f6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    
+    .step-title {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+    
+    .step-description {
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+    
+    .marker-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 60px;
+    }
+    
+    .marker-image {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    
+    .download-button {
+      display: inline-block;
+      padding: 12px 25px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: 500;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .download-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .animals-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-bottom: 60px;
+    }
+    
+    .animal-preview {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .animal-letter {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: #3b82f6;
+    }
+    
+    .animal-name {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .subtitle {
+        font-size: 1rem;
+      }
+      
+      .features {
+        grid-template-columns: 1fr;
+      }
+      
+      .steps {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Animation */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .floating {
+      animation: float 6s ease-in-out infinite;
     }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div class="container">
+    <header>
+      <h1>AR Alphabet Animaux</h1>
+      <p class="subtitle">Découvrez le monde animal en réalité augmentée ! Une expérience éducative et ludique pour apprendre l'alphabet avec des animaux en 3D.</p>
+    </header>
+    
+    <section class="hero">
+      <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" alt="AR Alphabet Animaux" class="hero-image floating">
+      <button id="start-button" class="cta-button">Démarrer l'expérience AR</button>
+    </section>
+    
+    <section class="features">
+      <div class="feature-card">
+        <div class="feature-icon">🔤</div>
+        <h3 class="feature-title">Alphabet complet</h3>
+        <p class="feature-description">Explorez les 26 lettres de l'alphabet, chacune associée à un animal différent en 3D.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🦁</div>
+        <h3 class="feature-title">Modèles 3D réalistes</h3>
+        <p class="feature-description">Découvrez des modèles 3D détaillés et animés qui prennent vie devant vos yeux.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3 class="feature-title">Fonctionne sur mobile</h3>
+        <p class="feature-description">Aucune application à télécharger, l'expérience fonctionne directement dans votre navigateur.</p>
+      </div>
+    </section>
+    
+    <section class="how-it-works">
+      <h2 class="section-title">Comment ça marche ?</h2>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Imprimez le marqueur</h3>
+          <p class="step-description">Téléchargez et imprimez le marqueur Hiro qui servira de base pour la réalité augmentée.</p>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3 class="step-title">Lancez l'expérience</h3>
+          <p class="step-description">Cliquez sur le bouton "Démarrer" et autorisez l'accès à votre caméra.</p>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Pointez votre caméra</h3>
+          <p class="step-description">Dirigez votre caméra vers le marqueur imprimé pour voir apparaître les animaux en 3D.</p>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">4</div>
+          <h3 class="step-title">Explorez l'alphabet</h3>
+          <p class="step-description">Naviguez entre les différentes lettres pour découvrir tous les animaux.</p>
+        </div>
+      </div>
+    </section>
+    
+    <section class="marker-section">
+      <h2 class="section-title">Téléchargez le marqueur</h2>
+      <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" alt="Marqueur Hiro" class="marker-image">
+      <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" download class="download-button">Télécharger le marqueur</a>
+    </section>
+    
+    <section>
+      <h2 class="section-title">Aperçu des animaux</h2>
+      
+      <div class="animals-preview">
+        <div class="animal-preview">
+          <div class="animal-letter">A</div>
+          <div class="animal-name">Alpaga</div>
+        </div>
+        <div class="animal-preview">
+          <div class="animal-letter">B</div>
+          <div class="animal-name">Buffalo</div>
+        </div>
+        <div class="animal-preview">
+          <div class="animal-letter">C</div>
+          <div class="animal-name">Chien</div>
+        </div>
+        <div class="animal-preview">
+          <div class="animal-letter">D</div>
+          <div class="animal-name">Dauphin</div>
+        </div>
+        <div class="animal-preview">
+          <div class="animal-letter">E</div>
+          <div class="animal-name">Éléphant</div>
+        </div>
+        <div class="animal-preview">
+          <div class="animal-letter">F</div>
+          <div class="animal-name">Flamant</div>
+        </div>
+        <div class="animal-preview">
+          <div class="animal-letter">G</div>
+          <div class="animal-name">Grenouille</div>
+        </div>
+        <div class="animal-preview">
+          <div class="animal-letter">H</div>
+          <div class="animal-name">Hibou</div>
+        </div>
+        <!-- Ajoutez d'autres animaux ici -->
+      </div>
+    </section>
+    
+    <footer>
+      <p>© 2023 AR Alphabet Animaux. Tous droits réservés.</p>
+    </footer>
+  </div>
+  
+  <script>
+    document.getElementById('start-button').addEventListener('click', function() {
+      window.location.href = '/ar-experience.html';
+    });
+  </script>
 </body>
 </html>
 

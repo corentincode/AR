@@ -3,11 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Pokémon Alphabet</title>
+  <title>AR Alphabet Animaux</title>
   
   <!-- A-Frame and AR.js -->
   <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  
+  <!-- Confetti.js pour les effets de confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     body {
@@ -19,143 +27,229 @@
       height: 100%;
       -webkit-user-select: none;
       user-select: none;
+      font-family: 'Poppins', sans-serif;
     }
     
+    /* UI Container moderne */
     .ui-container {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 10px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
+      padding: 15px;
       z-index: 1000;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
     }
     
+    /* Sélecteur de lettres moderne */
     .letter-selector {
       display: flex;
       justify-content: center;
-      gap: 5px;
+      gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      max-width: 100%;
+      overflow-x: auto;
+      padding-bottom: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    }
+    
+    .letter-selector::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .letter-selector::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
     }
     
     .letter-button {
-      width: 40px;
-      height: 40px;
-      background-color: rgba(0, 0, 0, 0.5);
+      width: 45px;
+      height: 45px;
+      background: linear-gradient(145deg, rgba(30, 30, 30, 0.8), rgba(20, 20, 20, 0.8));
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 5px;
+      border: none;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      font-weight: 600;
       font-size: 18px;
       cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .letter-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
     }
     
     .letter-button.active {
-      background-color: #3b82f6;
-      border-color: #3b82f6;
+      background: linear-gradient(145deg, #4f46e5, #3b82f6);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
     }
     
-    .pokemon-name {
+    /* Nom de l'animal */
+    .animal-name {
       text-align: center;
       color: white;
-      font-size: 16px;
-      margin-bottom: 10px;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.5px;
     }
     
+    /* Indicateur de statut du marqueur */
     .marker-status {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 5px 15px;
-      border-radius: 20px;
-      background-color: rgba(239, 68, 68, 0.8);
+      padding: 8px 16px;
+      border-radius: 30px;
+      background: linear-gradient(to right, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
       color: white;
       font-size: 14px;
+      font-weight: 500;
       z-index: 1000;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .marker-status.detected {
-      background-color: rgba(34, 197, 94, 0.8);
+      background: linear-gradient(to right, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.9));
+      box-shadow: 0 4px 10px rgba(34, 197, 94, 0.4);
     }
     
+    .marker-status::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: white;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.4; transform: scale(0.8); }
+    }
+    
+    /* Bouton d'info */
     .info-button {
       position: fixed;
       top: 20px;
       left: 20px;
-      width: 40px;
-      height: 40px;
-      background-color: rgba(0, 0, 0, 0.5);
+      width: 45px;
+      height: 45px;
+      background: linear-gradient(145deg, rgba(30, 30, 30, 0.8), rgba(20, 20, 20, 0.8));
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 5px;
+      border: none;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
+      font-weight: bold;
       cursor: pointer;
       z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
     }
     
+    .info-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Instructions */
     .instructions {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: rgba(0, 0, 0, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 2000;
+      backdrop-filter: blur(5px);
     }
     
     .instructions-content {
-      max-width: 80%;
-      background-color: rgba(0, 0, 0, 0.7);
-      border-radius: 10px;
-      padding: 20px;
+      max-width: 85%;
+      width: 400px;
+      background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(20, 20, 20, 0.95));
+      border-radius: 20px;
+      padding: 30px;
       color: white;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .instructions h2 {
       margin-top: 0;
-      font-size: 20px;
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      background: linear-gradient(to right, #4f46e5, #3b82f6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
     }
     
     .instructions ol {
-      padding-left: 20px;
-      margin-bottom: 20px;
+      padding-left: 25px;
+      margin-bottom: 25px;
     }
     
     .instructions li {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      line-height: 1.5;
     }
     
     .instructions img {
       display: block;
-      margin: 0 auto 20px;
-      width: 120px;
-      height: 120px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin: 0 auto 25px;
+      width: 150px;
+      height: 150px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     }
     
     .close-button {
       display: block;
       width: 100%;
-      padding: 10px;
-      background-color: #3b82f6;
+      padding: 12px;
+      background: linear-gradient(to right, #4f46e5, #3b82f6);
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 12px;
       font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+      transition: all 0.2s ease;
+    }
+    
+    .close-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(59, 130, 246, 0.5);
     }
     
     /* Styles spécifiques pour corriger l'affichage plein écran */
@@ -176,6 +270,84 @@
       width: 100% !important;
       height: 100% !important;
     }
+    
+    /* Animation de chargement */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3b82f6;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    .loading-text {
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Effet de confetti */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1500;
+      pointer-events: none;
+    }
+    
+    /* Catégories d'animaux */
+    .categories {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    }
+    
+    .category-button {
+      padding: 8px 15px;
+      background: linear-gradient(145deg, rgba(30, 30, 30, 0.8), rgba(20, 20, 20, 0.8));
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .category-button.active {
+      background: linear-gradient(145deg, #4f46e5, #3b82f6);
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+    }
   </style>
 </head>
 <body>
@@ -187,20 +359,21 @@
     
     <a-marker preset="hiro" id="hiro-marker" emitevents="true">
       <a-entity
-        id="pokemon-model"
+        id="animal-model"
         position="0 -1 0"
-        rotation="350 0 0"
+        rotation="0 0 0"
         scale="0.30 0.30 0.30"
         gltf-model="/alpaca.glb"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear"
       ></a-entity>
       <a-text
-        id="pokemon-name"
+        id="animal-name"
         value="Alpaga"
-        position="0 -1 0"
-        rotation="350 0 0"
+        position="0 -1.5 0"
+        rotation="0 0 0"
         align="center"
         color="white"
-        scale="0.30 0.30 0.30"
+        scale="0.5 0.5 0.5"
       ></a-text>
     </a-marker>
     
@@ -213,183 +386,199 @@
   
   <div id="instructions" class="instructions">
     <div class="instructions-content">
-      <h2>Visualiseur AR Pokémon</h2>
+      <h2>AR Alphabet Animaux</h2>
       <ol>
-        <li>Pointez votre caméra vers un marqueur Hiro</li>
-        <li>Un modèle 3D de Pokémon apparaîtra sur le marqueur</li>
-        <li>Utilisez le sélecteur en bas pour changer de Pokémon</li>
-        <li>Chaque lettre correspond à une évolution d'Évoli</li>
+        <li>Pointez votre caméra vers le marqueur Hiro ci-dessous</li>
+        <li>Un modèle 3D d'animal apparaîtra sur le marqueur</li>
+        <li>Explorez l'alphabet en sélectionnant différentes lettres</li>
+        <li>Découvrez un animal différent pour chaque lettre de l'alphabet</li>
       </ol>
       <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" alt="Marqueur Hiro">
-      <button id="close-instructions" class="close-button">Commencer</button>
+      <button id="close-instructions" class="close-button">Commencer l'expérience</button>
     </div>
   </div>
   
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Chargement de l'animal...</div>
+  </div>
+  
+  <canvas id="confetti-canvas"></canvas>
+  
   <div class="ui-container">
-    <div id="pokemon-name-display" class="pokemon-name">Tortue</div>
+    <div id="animal-name-display" class="animal-name">Alpaga</div>
+    
+    <div class="categories">
+      <button class="category-button active" data-category="all">Tous</button>
+      <button class="category-button" data-category="mammals">Mammifères</button>
+      <button class="category-button" data-category="birds">Oiseaux</button>
+      <button class="category-button" data-category="reptiles">Reptiles</button>
+      <button class="category-button" data-category="aquatic">Aquatiques</button>
+    </div>
+    
     <div class="letter-selector">
-      <button class="letter-button active" data-letter="A" data-model="/alpaca.glb" data-name="Alpaga">A</button>
-      <button class="letter-button" data-letter="B" data-model="/buffalo.glb" data-name="Buffalo">B</button>
-      <button class="letter-button" data-letter="C" data-model="/dog.glb" data-name="Chien">C</button>
-      <button class="letter-button" data-letter="D" data-model="/dolphin.glb" data-name="Dauphin">D</button>
-      <button class="letter-button" data-letter="E" data-model="/elefant.glb" data-name="Elephant">E</button>
-      <button class="letter-button" data-letter="F" data-model="/flamant.glb" data-name="Flamant">F</button>
-      <button class="letter-button" data-letter="G" data-model="/frog.glb" data-name="Grenouille">G</button>
-      <button class="letter-button" data-letter="H" data-model="/hibou.glb" data-name="Hibou">H</button>
-      <button class="letter-button" data-letter="I" data-model="/iguane.glb" data-name="Iguane">I</button>
-      <button class="letter-button" data-letter="J" data-model="/jaguar.glb" data-name="Jaguar">J</button>
-      <button class="letter-button" data-letter="K" data-model="/kangaroo.glb" data-name="Kangourou">K</button>
-      <button class="letter-button" data-letter="L" data-model="/lion.glb" data-name="Lion">L</button>
-      <button class="letter-button" data-letter="M" data-model="/sheep.glb" data-name="Mouton">M</button>
-      <button class="letter-button" data-letter="N" data-model="/narval.glb" data-name="Narval">N</button>
-      <button class="letter-button" data-letter="O" data-model="/oiseau.glb" data-name="Oiseau">O</button>
-      <button class="letter-button" data-letter="P" data-model="/pinguin.glb" data-name="Pinguin">P</button>
-      <button class="letter-button" data-letter="Q" data-model="/quokka.glb" data-name="Quokka">Q</button>
-      <button class="letter-button" data-letter="R" data-model="/renard.glb" data-name="Renard">R</button>
-      <button class="letter-button" data-letter="S" data-model="/snake.glb" data-name="Serpent">S</button>
-      <button class="letter-button" data-letter="T" data-model="/tapir.glb" data-name="Tapir">T</button>
-      <button class="letter-button" data-letter="U" data-model="/unau.glb" data-name="Unau">U</button>
-      <button class="letter-button" data-letter="V" data-model="/varan.glb" data-name="Varan">V</button>
-      <button class="letter-button" data-letter="W" data-model="/wombat.glb" data-name="Wombat">W</button>
-      <button class="letter-button" data-letter="X" data-model="/x.glb" data-name="X">X</button>
-      <button class="letter-button" data-letter="Y" data-model="/yack.glb" data-name="Yack">Y</button>
-      <button class="letter-button" data-letter="Z" data-model="/zebra.glb" data-name="Zebre">Z</button>
+      <button class="letter-button active" data-letter="A" data-model="/alpaca.glb" data-name="Alpaga" data-category="mammals">A</button>
+      <button class="letter-button" data-letter="B" data-model="/buffalo.glb" data-name="Buffalo" data-category="mammals">B</button>
+      <button class="letter-button" data-letter="C" data-model="/dog.glb" data-name="Chien" data-category="mammals">C</button>
+      <button class="letter-button" data-letter="D" data-model="/dolphin.glb" data-name="Dauphin" data-category="aquatic">D</button>
+      <button class="letter-button" data-letter="E" data-model="/elefant.glb" data-name="Elephant" data-category="mammals">E</button>
+      <button class="letter-button" data-letter="F" data-model="/flamant.glb" data-name="Flamant" data-category="birds">F</button>
+      <button class="letter-button" data-letter="G" data-model="/frog.glb" data-name="Grenouille" data-category="aquatic">G</button>
+      <button class="letter-button" data-letter="H" data-model="/hibou.glb" data-name="Hibou" data-category="birds">H</button>
+      <button class="letter-button" data-letter="I" data-model="/iguane.glb" data-name="Iguane" data-category="reptiles">I</button>
+      <button class="letter-button" data-letter="J" data-model="/jaguar.glb" data-name="Jaguar" data-category="mammals">J</button>
+      <button class="letter-button" data-letter="K" data-model="/kangaroo.glb" data-name="Kangourou" data-category="mammals">K</button>
+      <button class="letter-button" data-letter="L" data-model="/lion.glb" data-name="Lion" data-category="mammals">L</button>
+      <button class="letter-button" data-letter="M" data-model="/sheep.glb" data-name="Mouton" data-category="mammals">M</button>
+      <button class="letter-button" data-letter="N" data-model="/narval.glb" data-name="Narval" data-category="aquatic">N</button>
+      <button class="letter-button" data-letter="O" data-model="/oiseau.glb" data-name="Oiseau" data-category="birds">O</button>
+      <button class="letter-button" data-letter="P" data-model="/pinguin.glb" data-name="Pingouin" data-category="birds">P</button>
+      <button class="letter-button" data-letter="Q" data-model="/quokka.glb" data-name="Quokka" data-category="mammals">Q</button>
+      <button class="letter-button" data-letter="R" data-model="/renard.glb" data-name="Renard" data-category="mammals">R</button>
+      <button class="letter-button" data-letter="S" data-model="/snake.glb" data-name="Serpent" data-category="reptiles">S</button>
+      <button class="letter-button" data-letter="T" data-model="/tapir.glb" data-name="Tapir" data-category="mammals">T</button>
+      <button class="letter-button" data-letter="U" data-model="/unau.glb" data-name="Unau" data-category="mammals">U</button>
+      <button class="letter-button" data-letter="V" data-model="/varan.glb" data-name="Varan" data-category="reptiles">V</button>
+      <button class="letter-button" data-letter="W" data-model="/wombat.glb" data-name="Wombat" data-category="mammals">W</button>
+      <button class="letter-button" data-letter="X" data-model="/x.glb" data-name="Xérus" data-category="mammals">X</button>
+      <button class="letter-button" data-letter="Y" data-model="/yack.glb" data-name="Yack" data-category="mammals">Y</button>
+      <button class="letter-button" data-letter="Z" data-model="/zebra.glb" data-name="Zèbre" data-category="mammals">Z</button>
     </div>
   </div>
   
   <script>
     // Configuration des modèles
     const modelConfigs = {
-      'Oiseau': {
-        scale: '0.75 0.75 0.75',
-        position: '0 0 0',
-        rotation: '350 0 0'
+      'Alpaga': {
+        scale: '0.30 0.30 0.30',
+        position: '0 -1 0',
+        rotation: '0 0 0'
       },
       'Buffalo': {
         scale: '0.20 0.20 0.20',
         position: '0 -1 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Chien': {
         scale: '1 1 1',
         position: '0 -1 0',
-        rotation: '350 0 0'
-      },
-      'Lion': {
-        scale: '0.60 0.60 0.60',
-        position: '0 -1 0',
-        rotation: '350 0 0'
-      },
-      'Zebre': {
-        scale: '0.50 0.50 0.50',
-        position: '0 -1 0',
-        rotation: '350 0 0'
-      },
-      'Renard': {
-        scale: '2 2 2',
-        position: '0 0 0',
-        rotation: '350 0 0'
-      },
-      'Alpaga': {
-        scale: '0.30 0.30 0.30',
-        position: '0 -1 0',
-        rotation: '350 0 0'
-      },
-      'Grenouille': {
-        scale: '0.50 0.50 0.50',
-        position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Dauphin': {
         scale: '0.75 0.75 0.75',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Elephant': {
         scale: '0.01 0.01 0.01',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Flamant': {
         scale: '0.10 0.10 0.10',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
+      },
+      'Grenouille': {
+        scale: '0.50 0.50 0.50',
+        position: '0 0 0',
+        rotation: '0 0 0'
       },
       'Hibou': {
         scale: '2 2 2',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Iguane': {
         scale: '0.30 0.30 0.30',
         position: '0 2 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Jaguar': {
         scale: '0.60 0.60 0.60',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Kangourou': {
         scale: '1 1 1',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
+      },
+      'Lion': {
+        scale: '0.60 0.60 0.60',
+        position: '0 -1 0',
+        rotation: '0 0 0'
       },
       'Mouton': {
         scale: '10 10 10',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Narval': {
         scale: '0.006 0.006 0.006',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
-      'Pinguin': {
+      'Oiseau': {
+        scale: '0.75 0.75 0.75',
+        position: '0 0 0',
+        rotation: '0 0 0'
+      },
+      'Pingouin': {
         scale: '1 1 1',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Quokka': {
         scale: '1 1 1',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
+      },
+      'Renard': {
+        scale: '2 2 2',
+        position: '0 0 0',
+        rotation: '0 0 0'
       },
       'Serpent': {
         scale: '0.35 0.35 0.35',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Tapir': {
         scale: '0.01 0.01 0.01',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Unau': {
         scale: '0.8 0.8 0.8',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Varan': {
         scale: '0.6 0.6 0.6',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Wombat': {
         scale: '0.4 0.4 0.4',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
-      'X': {
+      'Xérus': {
         scale: '0.15 0.15 0.15',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
       'Yack': {
         scale: '0.3 0.3 0.3',
         position: '0 0 0',
-        rotation: '350 0 0'
+        rotation: '0 0 0'
       },
+      'Zèbre': {
+        scale: '0.50 0.50 0.50',
+        position: '0 -1 0',
+        rotation: '0 0 0'
+      }
     };
 
     // Variable pour suivre si un modèle est en cours de chargement
@@ -397,26 +586,46 @@
     
     // Variable pour empêcher le rechargement automatique
     let lastInteractionTime = Date.now();
+    
+    // Variable pour suivre si le marqueur est détecté
+    let isMarkerDetected = false;
+    
+    // Variable pour suivre si les confettis ont été lancés
+    let confettiLaunched = false;
 
     document.addEventListener('DOMContentLoaded', function() {
       // Elements
       const markerStatus = document.getElementById('marker-status');
-      const pokemonNameDisplay = document.getElementById('pokemon-name-display');
+      const animalNameDisplay = document.getElementById('animal-name-display');
       const letterButtons = document.querySelectorAll('.letter-button');
+      const categoryButtons = document.querySelectorAll('.category-button');
       const infoButton = document.getElementById('info-button');
       const instructions = document.getElementById('instructions');
       const closeInstructionsButton = document.getElementById('close-instructions');
       const marker = document.getElementById('hiro-marker');
-      const pokemonModel = document.getElementById('pokemon-model');
-      const pokemonName = document.getElementById('pokemon-name');
+      const animalModel = document.getElementById('animal-model');
+      const animalName = document.getElementById('animal-name');
+      const loadingOverlay = document.getElementById('loading-overlay');
+      const confettiCanvas = document.getElementById('confetti-canvas');
+      
+      // Initialiser le canvas de confetti
+      const myConfetti = confetti.create(confettiCanvas, {
+        resize: true,
+        useWorker: true
+      });
+      
+      // Cacher l'overlay de chargement après un court délai
+      setTimeout(() => {
+        loadingOverlay.style.display = 'none';
+      }, 2000);
       
       // Initialiser avec le modèle actif
-      const initialModelName = pokemonNameDisplay.textContent;
+      const initialModelName = animalNameDisplay.textContent;
       if (modelConfigs[initialModelName]) {
         const config = modelConfigs[initialModelName];
-        pokemonModel.setAttribute('scale', config.scale);
-        pokemonModel.setAttribute('position', config.position);
-        pokemonModel.setAttribute('rotation', config.rotation);
+        animalModel.setAttribute('scale', config.scale);
+        animalModel.setAttribute('position', config.position);
+        animalModel.setAttribute('rotation', config.rotation);
       }
       
       // Show/hide instructions
@@ -430,12 +639,34 @@
         lastInteractionTime = Date.now();
       });
       
+      // Fonction pour lancer les confettis
+      function launchConfetti() {
+        myConfetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+      
       // Marker detection events
       marker.addEventListener('markerFound', function() {
         console.log('Marker found!');
         markerStatus.textContent = 'Marqueur détecté';
         markerStatus.classList.add('detected');
         lastInteractionTime = Date.now();
+        isMarkerDetected = true;
+        
+        // Lancer les confettis seulement la première fois que le marqueur est détecté
+        if (!confettiLaunched) {
+          launchConfetti();
+          confettiLaunched = true;
+          
+          // Réinitialiser après 5 secondes pour permettre de relancer les confettis
+          // si le marqueur est perdu puis retrouvé
+          setTimeout(() => {
+            confettiLaunched = false;
+          }, 5000);
+        }
       });
       
       marker.addEventListener('markerLost', function() {
@@ -443,6 +674,32 @@
         markerStatus.textContent = 'Recherche de marqueur...';
         markerStatus.classList.remove('detected');
         lastInteractionTime = Date.now();
+        isMarkerDetected = false;
+      });
+      
+      // Filtrage par catégorie
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Mettre à jour le temps d'interaction
+          lastInteractionTime = Date.now();
+          
+          // Mettre à jour le bouton actif
+          categoryButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Obtenir la catégorie sélectionnée
+          const selectedCategory = this.getAttribute('data-category');
+          
+          // Filtrer les boutons de lettres en fonction de la catégorie
+          letterButtons.forEach(letterBtn => {
+            const category = letterBtn.getAttribute('data-category');
+            if (selectedCategory === 'all' || category === selectedCategory) {
+              letterBtn.style.display = 'flex';
+            } else {
+              letterBtn.style.display = 'none';
+            }
+          });
+        });
       });
       
       // Letter selection
@@ -459,6 +716,7 @@
           
           // Marquer comme en cours de chargement
           isModelLoading = true;
+          loadingOverlay.style.display = 'flex';
           
           // Update active button
           letterButtons.forEach(btn => btn.classList.remove('active'));
@@ -471,24 +729,30 @@
           console.log('Changing to model:', name);
           
           // Update model and text
-          pokemonModel.setAttribute('gltf-model', modelUrl);
-          pokemonName.setAttribute('value', name);
-          pokemonNameDisplay.textContent = name;
+          animalModel.setAttribute('gltf-model', modelUrl);
+          animalName.setAttribute('value', name);
+          animalNameDisplay.textContent = name;
           
           // Appliquer la configuration spécifique au modèle
           if (modelConfigs[name]) {
             const config = modelConfigs[name];
             console.log('Applying config:', config);
-            pokemonModel.setAttribute('scale', config.scale);
-            pokemonModel.setAttribute('position', config.position);
-            pokemonModel.setAttribute('rotation', config.rotation);
+            animalModel.setAttribute('scale', config.scale);
+            animalModel.setAttribute('position', config.position);
+            animalModel.setAttribute('rotation', config.rotation);
           } else {
             console.warn('No configuration found for model:', name);
           }
           
-          // Réinitialiser l'état de chargement après un délai
+          // Cacher l'overlay de chargement après un délai
           setTimeout(function() {
             isModelLoading = false;
+            loadingOverlay.style.display = 'none';
+            
+            // Si le marqueur est détecté, lancer les confettis pour le nouveau modèle
+            if (isMarkerDetected) {
+              launchConfetti();
+            }
           }, 2000);
         });
       });
@@ -521,8 +785,7 @@
       window.addEventListener('load', fixFullscreenDisplay);
       window.addEventListener('resize', fixFullscreenDisplay);
       
-      // Appliquer le fix plusieurs fois pour s'assurer qu'il fonctionne
-      setTimeout(fixFullscreenDisplay, 500);
+      // Appliquer le fix une fois après un court délai
       setTimeout(fixFullscreenDisplay, 1000);
       
       // Empêcher le rechargement automatique
