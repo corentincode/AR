@@ -45,6 +45,11 @@
       transition: transform 0.3s ease;
     }
     
+    /* Animation pour cacher le panel */
+    .ui-container.hidden {
+      transform: translateY(100%);
+    }
+    
     /* Sélecteur de lettres moderne */
     .letter-selector {
       display: flex;
@@ -147,11 +152,18 @@
       100% { opacity: 0.4; transform: scale(0.8); }
     }
     
-    /* Bouton d'info */
-    .info-button {
+    /* Boutons d'action */
+    .action-buttons {
       position: fixed;
       top: 20px;
       left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+    
+    .action-button {
       width: 45px;
       height: 45px;
       background: linear-gradient(145deg, rgba(30, 30, 30, 0.8), rgba(20, 20, 20, 0.8));
@@ -164,14 +176,41 @@
       font-size: 20px;
       font-weight: bold;
       cursor: pointer;
-      z-index: 1000;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       transition: all 0.2s ease;
     }
     
-    .info-button:hover {
+    .action-button:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .action-button.active {
+      background: linear-gradient(145deg, #4f46e5, #3b82f6);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    }
+    
+    /* Nom flottant de l'animal (visible quand le panel est caché) */
+    .floating-name {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      background: linear-gradient(to right, rgba(79, 70, 229, 0.9), rgba(59, 130, 246, 0.9));
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .floating-name.visible {
+      opacity: 1;
     }
     
     /* Instructions */
@@ -360,21 +399,13 @@
     <a-marker preset="hiro" id="hiro-marker" emitevents="true">
       <a-entity
         id="animal-model"
-        position="0 -1 0"
+        position="0 0 0"
         rotation="0 0 0"
         scale="0.30 0.30 0.30"
         gltf-model="/alpaca.glb"
         animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear"
       ></a-entity>
-      <a-text
-        id="animal-name"
-        value="Alpaga"
-        position="0 -1.5 0"
-        rotation="0 0 0"
-        align="center"
-        color="white"
-        scale="0.5 0.5 0.5"
-      ></a-text>
+      <!-- Texte supprimé comme demandé -->
     </a-marker>
     
     <a-entity camera></a-entity>
@@ -382,7 +413,13 @@
   
   <div id="marker-status" class="marker-status">Recherche de marqueur...</div>
   
-  <button id="info-button" class="info-button">i</button>
+  <div class="action-buttons">
+    <button id="home-button" class="action-button" title="Retour à l'accueil">⌂</button>
+    <button id="info-button" class="action-button" title="Informations">i</button>
+    <button id="toggle-ui-button" class="action-button" title="Afficher/Masquer l'interface">≡</button>
+  </div>
+  
+  <div id="floating-name" class="floating-name">Alpaga</div>
   
   <div id="instructions" class="instructions">
     <div class="instructions-content">
@@ -391,7 +428,7 @@
         <li>Pointez votre caméra vers le marqueur Hiro ci-dessous</li>
         <li>Un modèle 3D d'animal apparaîtra sur le marqueur</li>
         <li>Explorez l'alphabet en sélectionnant différentes lettres</li>
-        <li>Découvrez un animal différent pour chaque lettre de l'alphabet</li>
+        <li>Utilisez le bouton ≡ pour masquer l'interface et mieux voir le modèle</li>
       </ol>
       <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" alt="Marqueur Hiro">
       <button id="close-instructions" class="close-button">Commencer l'expérience</button>
@@ -405,7 +442,7 @@
   
   <canvas id="confetti-canvas"></canvas>
   
-  <div class="ui-container">
+  <div id="ui-container" class="ui-container">
     <div id="animal-name-display" class="animal-name">Alpaga</div>
     
     <div class="categories">
@@ -451,17 +488,17 @@
     const modelConfigs = {
       'Alpaga': {
         scale: '0.30 0.30 0.30',
-        position: '0 -1 0',
+        position: '0 0 0',
         rotation: '0 0 0'
       },
       'Buffalo': {
         scale: '0.20 0.20 0.20',
-        position: '0 -1 0',
+        position: '0 0 0',
         rotation: '0 0 0'
       },
       'Chien': {
         scale: '1 1 1',
-        position: '0 -1 0',
+        position: '0 0 0',
         rotation: '0 0 0'
       },
       'Dauphin': {
@@ -491,7 +528,7 @@
       },
       'Iguane': {
         scale: '0.30 0.30 0.30',
-        position: '0 2 0',
+        position: '0 0 0',
         rotation: '0 0 0'
       },
       'Jaguar': {
@@ -506,7 +543,7 @@
       },
       'Lion': {
         scale: '0.60 0.60 0.60',
-        position: '0 -1 0',
+        position: '0 0 0',
         rotation: '0 0 0'
       },
       'Mouton': {
@@ -576,7 +613,7 @@
       },
       'Zèbre': {
         scale: '0.50 0.50 0.50',
-        position: '0 -1 0',
+        position: '0 0 0',
         rotation: '0 0 0'
       }
     };
@@ -592,19 +629,28 @@
     
     // Variable pour suivre si les confettis ont été lancés
     let confettiLaunched = false;
+    
+    // Variable pour suivre si l'interface est visible
+    let isUIVisible = true;
+
+    // Variable pour éviter les chargements en boucle
+    let initialLoadComplete = false;
 
     document.addEventListener('DOMContentLoaded', function() {
       // Elements
       const markerStatus = document.getElementById('marker-status');
       const animalNameDisplay = document.getElementById('animal-name-display');
+      const floatingName = document.getElementById('floating-name');
       const letterButtons = document.querySelectorAll('.letter-button');
       const categoryButtons = document.querySelectorAll('.category-button');
       const infoButton = document.getElementById('info-button');
+      const toggleUIButton = document.getElementById('toggle-ui-button');
+      const homeButton = document.getElementById('home-button');
+      const uiContainer = document.getElementById('ui-container');
       const instructions = document.getElementById('instructions');
       const closeInstructionsButton = document.getElementById('close-instructions');
       const marker = document.getElementById('hiro-marker');
       const animalModel = document.getElementById('animal-model');
-      const animalName = document.getElementById('animal-name');
       const loadingOverlay = document.getElementById('loading-overlay');
       const confettiCanvas = document.getElementById('confetti-canvas');
       
@@ -616,19 +662,22 @@
       
       // Cacher l'overlay de chargement après un court délai
       setTimeout(() => {
-        loadingOverlay.style.display = 'none';
+        if (loadingOverlay) {
+          loadingOverlay.style.display = 'none';
+        }
       }, 2000);
       
       // Initialiser avec le modèle actif
       const initialModelName = animalNameDisplay.textContent;
-      if (modelConfigs[initialModelName]) {
+      if (modelConfigs[initialModelName] && !initialLoadComplete) {
+        initialLoadComplete = true;
         const config = modelConfigs[initialModelName];
         animalModel.setAttribute('scale', config.scale);
         animalModel.setAttribute('position', config.position);
         animalModel.setAttribute('rotation', config.rotation);
       }
       
-      // Show/hide instructions
+      // Afficher/masquer les instructions
       closeInstructionsButton.addEventListener('click', function() {
         instructions.style.display = 'none';
         lastInteractionTime = Date.now();
@@ -636,6 +685,28 @@
       
       infoButton.addEventListener('click', function() {
         instructions.style.display = 'flex';
+        lastInteractionTime = Date.now();
+      });
+      
+      // Retour à l'accueil
+      homeButton.addEventListener('click', function() {
+        window.location.href = '/index.html';
+      });
+      
+      // Afficher/masquer l'interface
+      toggleUIButton.addEventListener('click', function() {
+        isUIVisible = !isUIVisible;
+        
+        if (isUIVisible) {
+          uiContainer.classList.remove('hidden');
+          floatingName.classList.remove('visible');
+          toggleUIButton.textContent = '≡';
+        } else {
+          uiContainer.classList.add('hidden');
+          floatingName.classList.add('visible');
+          toggleUIButton.textContent = '×';
+        }
+        
         lastInteractionTime = Date.now();
       });
       
@@ -730,8 +801,8 @@
           
           // Update model and text
           animalModel.setAttribute('gltf-model', modelUrl);
-          animalName.setAttribute('value', name);
           animalNameDisplay.textContent = name;
+          floatingName.textContent = name;
           
           // Appliquer la configuration spécifique au modèle
           if (modelConfigs[name]) {
@@ -747,7 +818,9 @@
           // Cacher l'overlay de chargement après un délai
           setTimeout(function() {
             isModelLoading = false;
-            loadingOverlay.style.display = 'none';
+            if (loadingOverlay) {
+              loadingOverlay.style.display = 'none';
+            }
             
             // Si le marqueur est détecté, lancer les confettis pour le nouveau modèle
             if (isMarkerDetected) {
