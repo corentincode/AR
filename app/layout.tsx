@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   title: "AR Pokémon Alphabet",
   description: "Visualiseur AR de Pokémon avec marqueur Hiro",
   viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -22,11 +21,8 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </head>
-      <body className={`${inter.className} overflow-hidden`}>{children}</body>
+      <body className={`${inter.className}`}>{children}</body>
     </html>
   )
 }
 
-
-
-import './globals.css'
